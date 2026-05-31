@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- APP CUSTOMIZATION GUIDE: BROWSER TAB TITLE
+       You can change the text inside <title> below to rename the browser tab. -->
+  <title>Toastmasters Self Timer | Immersive Speech Timer</title>
+  
+  <!-- Google Fonts: Outfit (For clean, modern digits and headings) and Inter (For precise body copy) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-dark">
+  <div id="app-container">
+    
+    <!-- Header with Wake Lock Indicator & Settings -->
+    <header class="glass-panel main-header">
+      <div class="logo-area">
+        <!-- APP CUSTOMIZATION GUIDE: LOGO ICON
+             You can replace the emoji "⏱️" below with another emoji or an <img> tag for a custom logo graphic. -->
+        <div class="logo-icon">⏱️</div>
+        
+        <!-- APP CUSTOMIZATION GUIDE: APP BRAND NAME & SUBTITLE
+             - Modify the text inside <h1> below to change the primary brand logo name.
+             - The <span class="highlight"> tag makes that part of the text use a beautiful neon purple-to-pink gradient.
+             - Change the text inside <p> below to change the supporting description/subtitle. -->
+        <div class="logo-text">
+          <h1>   <span class="highlight">BEACON</span></h1>
+          <p>Toastmasters Self Timer</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span id="wakelock-status" class="badge badge-inactive">
+          <span class="badge-dot"></span> Wake Lock: Inactive
+        </span>
+        <span id="fullscreen-badge" class="badge badge-secondary">
+          🖥️ Window Mode
+        </span>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+      
+      <!-- View 1: Configuration Dashboard -->
+      <section id="setup-view" class="view-active">
+        <div class="dashboard-grid">
+          
+          <!-- Left Column: Configurations -->
+          <div class="config-column">
+            
+            <!-- Speaker details card -->
+            <div class="glass-card card-glow form-card">
+              <h2 class="section-title">🎤 Speaker Details</h2>
+              <div class="input-group">
+                <label for="speaker-name">Speaker Name</label>
+                <input type="text" id="speaker-name" placeholder="e.g., Jane Doe or 'Prepared Speech #1'" autocomplete="off">
+              </div>
+            </div>
+
+            <!-- Preset speech timing cards -->
+            <div class="glass-card card-glow timing-presets-card">
+              <h2 class="section-title">⏱️ Select Speech Preset</h2>
+              <div class="preset-grid">
+                
+                <button type="button" class="preset-btn active" data-preset="prepared" data-green="5" data-green-sec="0" data-yellow="6" data-yellow-sec="0" data-red="7" data-red-sec="0">
+                  <span class="preset-icon">📜</span>
+                  <span class="preset-name">Prepared Speech</span>
+                  <span class="preset-duration">5 - 7 mins</span>
+                  <span class="preset-details">G: 5m | Y: 6m | R: 7m</span>
+                </button>
+
+                <button type="button" class="preset-btn" data-preset="topics" data-green="1" data-green-sec="0" data-yellow="1" data-yellow-sec="30" data-red="2" data-red-sec="0">
+                  <span class="preset-icon">⚡</span>
+                  <span class="preset-name">Table Topics</span>
+                  <span class="preset-duration">1 - 2 mins</span>
+                  <span class="preset-details">G: 1m | Y: 1.5m | R: 2m</span>
+                </button>
+
+                <button type="button" class="preset-btn" data-preset="evaluation" data-green="2" data-green-sec="0" data-yellow="2" data-yellow-sec="30" data-red="3" data-red-sec="0">
+                  <span class="preset-icon">📋</span>
+                  <span class="preset-name">Evaluation</span>
+                  <span class="preset-duration">2 - 3 mins</span>
+                  <span class="preset-details">G: 2m | Y: 2.5m | R: 3m</span>
+                </button>
+
+                <button type="button" class="preset-btn" data-preset="icebreaker" data-green="4" data-green-sec="0" data-yellow="5" data-yellow-sec="0" data-red="6" data-red-sec="0">
+                  <span class="preset-icon">❄️</span>
+                  <span class="preset-name">Ice Breaker</span>
+                  <span class="preset-duration">4 - 6 mins</span>
+                  <span class="preset-details">G: 4m | Y: 5m | R: 6m</span>
+                </button>
+
+                <button type="button" id="custom-preset-btn" class="preset-btn" data-preset="custom">
+                  <span class="preset-icon">⚙️</span>
+                  <span class="preset-name">Custom Timing</span>
+                  <span class="preset-duration">User Defined</span>
+                  <span class="preset-details">Configure Below</span>
+                </button>
+
+              </div>
+            </div>
+
+            <!-- Custom Timing Form Panel (collapsible/expandable) -->
+            <div id="custom-timing-form" class="glass-card card-glow form-card collapsed">
+              <h2 class="section-title">🔧 Custom Thresholds Configuration</h2>
+              <div class="custom-inputs-row">
+                
+                <div class="custom-input-col border-green">
+                  <span class="color-label text-green">🟢 Green (Min Limit)</span>
+                  <div class="time-inputs">
+                    <div class="number-input">
+                      <input type="number" id="custom-green-min" min="0" max="99" value="5" placeholder="Min">
+                      <span class="unit">m</span>
+                    </div>
+                    <div class="number-input">
+                      <input type="number" id="custom-green-sec" min="0" max="59" value="0" placeholder="Sec">
+                      <span class="unit">s</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="custom-input-col border-yellow">
+                  <span class="color-label text-yellow">🟡 Yellow (Mid Point)</span>
+                  <div class="time-inputs">
+                    <div class="number-input">
+                      <input type="number" id="custom-yellow-min" min="0" max="99" value="6" placeholder="Min">
+                      <span class="unit">m</span>
+                    </div>
+                    <div class="number-input">
+                      <input type="number" id="custom-yellow-sec" min="0" max="59" value="0" placeholder="Sec">
+                      <span class="unit">s</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="custom-input-col border-red">
+                  <span class="color-label text-red">🔴 Red (Max Limit)</span>
+                  <div class="time-inputs">
+                    <div class="number-input">
+                      <input type="number" id="custom-red-min" min="0" max="99" value="7" placeholder="Min">
+                      <span class="unit">m</span>
+                    </div>
+                    <div class="number-input">
+                      <input type="number" id="custom-red-sec" min="0" max="59" value="0" placeholder="Sec">
+                      <span class="unit">s</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div id="custom-validation-error" class="validation-error-msg hidden">
+                ⚠️ Timings must be sequential: Green &lt; Yellow &lt; Red
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Settings, Start Button, Features Info -->
+          <div class="settings-column">
+            
+            <!-- Preferences / Settings -->
+            <div class="glass-card card-glow form-card">
+              <h2 class="section-title">⚙️ Preferences</h2>
+              
+              <div class="settings-list">
+                
+                <div class="setting-item">
+                  <div class="setting-desc">
+                    <span class="setting-label">Show Timer Digits</span>
+                    <span class="setting-hint">Displays actual numbers on color background</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="setting-show-timer" checked>
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-desc">
+                    <span class="setting-label">Prevent Screen Sleep (Wake Lock)</span>
+                    <span class="setting-hint">Keep screen awake while running</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="setting-wake-lock" checked>
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-desc">
+                    <span class="setting-label">Accelerated Demo Mode</span>
+                    <span class="setting-hint">1 second = 1 minute for quick testing</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="setting-demo-mode">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Speech start trigger -->
+            <div class="glass-card card-glow start-trigger-card">
+              <button id="btn-start-speech" class="action-btn btn-primary btn-pulse">
+                <span class="btn-icon">▶️</span> Start Speech Timer
+              </button>
+              <p class="start-hint">Transitions background color silently based on selections.</p>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Session History Logs -->
+        <div class="glass-card card-glow history-card">
+          <div class="history-header">
+            <h2 class="section-title">📊 Session History</h2>
+            <button id="btn-clear-history" class="badge badge-secondary action-badge">🧹 Clear Logs</button>
+          </div>
+          <div class="history-table-container">
+            <table id="history-table">
+              <thead>
+                <tr>
+                  <th>Speaker Name</th>
+                  <th>Preset / Type</th>
+                  <th>Milestones (G | Y | R)</th>
+                  <th>Actual Duration</th>
+                  <th>Status</th>
+                  <th>Finished At</th>
+                </tr>
+              </thead>
+              <tbody id="history-body">
+                <!-- Session data injected via JavaScript -->
+                <tr id="history-empty-row">
+                  <td colspan="6" class="text-muted text-center">No speeches timed in this session yet. Your records will appear here!</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- View 2: Active Timer Screen -->
+      <section id="timer-view" class="view-hidden">
+        
+        <!-- Main timer background element -->
+        <div id="immersive-bg" class="immersive-beacon bg-neutral">
+          
+          <!-- Immersive full page control overlay (shows when moving mouse / clicking screen) -->
+          <div id="timer-overlay" class="overlay-panel">
+            
+            <!-- Minimal Floating Escape bar for pure screen mode -->
+            <div class="immersive-floating-bar">
+              <span id="immersive-speaker-badge">Jane Doe</span>
+              <span id="immersive-preset-badge">Prepared (5m - 7m)</span>
+              <button id="btn-toggle-fullscreen" class="btn-floating" title="Toggle Fullscreen">🖥️ Fullscreen</button>
+            </div>
+
+            <div class="timer-center-content">
+              <!-- Animated Glowing Circular Frame for Digits -->
+              <div id="timer-digits-container" class="digits-ring-frame">
+                <div class="digits-text" id="display-time">00:00</div>
+                <div class="speech-status-label" id="speech-status">STARTING</div>
+              </div>
+
+              <!-- Static text indicator when digits are hidden -->
+              <div id="hidden-digits-indicator" class="hidden-digits-label hidden">
+                <div class="indicator-icon">👁️‍🗨️</div>
+                <div class="indicator-title">Immersive Mode Active</div>
+                <div class="indicator-sub">Watch background colors. Focus on your pace.</div>
+              </div>
+            </div>
+
+            <!-- Bottom Floating Control Center -->
+            <div class="floating-controls-panel glass-panel">
+              <button id="btn-pause" class="btn-circle btn-warn" title="Pause Timer">
+                <span class="icon">⏸️</span> Pause
+              </button>
+              <button id="btn-stop" class="btn-circle btn-danger" title="Finish and Save Speech">
+                <span class="icon">⏹️</span> Stop
+              </button>
+              <button id="btn-reset" class="btn-circle btn-secondary" title="Discard Speech">
+                <span class="icon">🔄</span> Reset
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+  
+  <script src="app.js"></script>
+</body>
+</html>
