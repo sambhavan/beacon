@@ -5,6 +5,16 @@
  */
 
 // ==========================================================================
+// Production Configurations
+// ==========================================================================
+/**
+ * PRODUCTION CONFIGURATION
+ * Set this constant to false to disable and hide the "Accelerated Demo Mode" setting.
+ * In production, standard real-world timing is required.
+ */
+const ENABLE_DEMO_MODE = false;
+
+// ==========================================================================
 // Application State
 // ==========================================================================
 const state = {
@@ -15,20 +25,20 @@ const state = {
   elapsedSeconds: 0,    // Integer seconds elapsed
   timerInterval: null,  // Interval reference
   wakeLockSentinel: null,
-  
+
   // Active timing thresholds (in seconds)
   thresholds: {
     green: 300,         // Default: 5 minutes
     yellow: 360,        // Default: 6 minutes
     red: 420            // Default: 7 minutes
   },
-  
+
   activePreset: 'prepared', // 'prepared', 'topics', 'evaluation', 'icebreaker', 'custom'
-  
+
   /* CUSTOMIZATION GUIDE: DEFAULT SPEAKER NAME
      Change the string below to set a different default speaker placeholder (e.g., 'Competitor'). */
   speakerName: 'Speaker',
-  
+
   /* CUSTOMIZATION GUIDE: PRESETS & TIMING PARAMETERS
      Modify the times in the presets object below. All numbers (green, yellow, red, minQualify, maxQualify)
      are in seconds (e.g., 300 seconds = 5 minutes).
@@ -52,14 +62,15 @@ const elements = {
   // Views
   setupView: document.getElementById('setup-view'),
   timerView: document.getElementById('timer-view'),
-  
+
   // Setup elements
   speakerInput: document.getElementById('speaker-name'),
   presetBtns: document.querySelectorAll('.preset-btn'),
   customPresetBtn: document.getElementById('custom-preset-btn'),
+  customPresetName: document.getElementById('custom-preset-name'),
   customTimingForm: document.getElementById('custom-timing-form'),
   btnStartSpeech: document.getElementById('btn-start-speech'),
-  
+
   // Custom timing inputs
   customGreenMin: document.getElementById('custom-green-min'),
   customGreenSec: document.getElementById('custom-green-sec'),
@@ -68,21 +79,21 @@ const elements = {
   customRedMin: document.getElementById('custom-red-min'),
   customRedSec: document.getElementById('custom-red-sec'),
   customValidationError: document.getElementById('custom-validation-error'),
-  
+
   // Preferences settings
   settingShowTimer: document.getElementById('setting-show-timer'),
   settingWakeLock: document.getElementById('setting-wake-lock'),
   settingDemoMode: document.getElementById('setting-demo-mode'),
-  
+
   // Header badges
   wakelockStatus: document.getElementById('wakelock-status'),
   fullscreenBadge: document.getElementById('fullscreen-badge'),
-  
+
   // History
   historyBody: document.getElementById('history-body'),
   historyEmptyRow: document.getElementById('history-empty-row'),
   btnClearHistory: document.getElementById('btn-clear-history'),
-  
+
   // Timer Canvas elements
   immersiveBg: document.getElementById('immersive-bg'),
   immersiveSpeakerBadge: document.getElementById('immersive-speaker-badge'),
@@ -90,14 +101,13 @@ const elements = {
   timerDigitsContainer: document.getElementById('timer-digits-container'),
   displayTime: document.getElementById('display-time'),
   speechStatus: document.getElementById('speech-status'),
-  hiddenDigitsIndicator: document.getElementById('hidden-digits-indicator'),
-  
+
   // Control Panel Buttons
   btnPause: document.getElementById('btn-pause'),
   btnStop: document.getElementById('btn-stop'),
   btnReset: document.getElementById('btn-reset'),
   btnToggleFullscreen: document.getElementById('btn-toggle-fullscreen'),
-  
+
   // Parent layout container
   appContainer: document.getElementById('app-container')
 };
@@ -110,6 +120,14 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHistoryFromStorage();
   checkWakeLockSupport();
   syncTimingThresholds();
+
+  // If demo mode is disabled in production settings, hide the control
+  if (!ENABLE_DEMO_MODE) {
+    const demoSettingItem = elements.settingDemoMode.closest('.setting-item');
+    if (demoSettingItem) {
+      demoSettingItem.style.display = 'none';
+    }
+  }
 });
 
 // Check if browser supports Wake Lock API
@@ -131,17 +149,17 @@ function checkWakeLockSupport() {
 // Event Listeners Setup
 // ==========================================================================
 function setupEventListeners() {
-  
+
   // Preset Button Selection
   elements.presetBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       elements.presetBtns.forEach(b => b.classList.remove('active'));
       const targetBtn = e.currentTarget;
       targetBtn.classList.add('active');
-      
+
       const presetType = targetBtn.dataset.preset;
       state.activePreset = presetType;
-      
+
       if (presetType === 'custom') {
         elements.customTimingForm.classList.remove('collapsed');
         validateCustomInputs();
@@ -150,11 +168,11 @@ function setupEventListeners() {
         elements.customValidationError.classList.add('hidden');
         elements.btnStartSpeech.disabled = false;
       }
-      
+
       syncTimingThresholds();
     });
   });
-  
+
   // Custom Form Input Listeners for Auto-validation
   const customInputs = [
     elements.customGreenMin, elements.customGreenSec,
@@ -167,27 +185,39 @@ function setupEventListeners() {
       syncTimingThresholds();
     });
   });
-  
+
   // Start Button Click
   elements.btnStartSpeech.addEventListener('click', startSpeech);
-  
+
   // Timer Controls
   elements.btnPause.addEventListener('click', togglePause);
   elements.btnStop.addEventListener('click', stopSpeech);
   elements.btnReset.addEventListener('click', resetTimer);
   elements.btnToggleFullscreen.addEventListener('click', toggleFullscreenMode);
-  
+
   // Clear history logs
   elements.btnClearHistory.addEventListener('click', clearSpeechLogs);
-  
+
   // Watch fullscreen changes to update UI elements
   document.addEventListener('fullscreenchange', handleFullscreenChange);
-  
+
   // Page visibility listener: Re-lock wake sentinel if page becomes visible again
   document.addEventListener('visibilitychange', handleVisibilityChange);
-  
+
   // Add key listener for space/escape inside active timer view for easy control
   document.addEventListener('keydown', handleKeyPress);
+
+  // Spin button handlers for minutes/seconds fields
+  document.querySelectorAll('.number-input').forEach(container => {
+    const input = container.querySelector('input[type="number"]');
+    const upBtn = container.querySelector('.spin-btn.up');
+    const downBtn = container.querySelector('.spin-btn.down');
+
+    if (input && upBtn && downBtn) {
+      upBtn.addEventListener('click', () => handleSpinClick(input, 'up'));
+      downBtn.addEventListener('click', () => handleSpinClick(input, 'down'));
+    }
+  });
 }
 
 // ==========================================================================
@@ -195,13 +225,13 @@ function setupEventListeners() {
 // ==========================================================================
 function validateCustomInputs() {
   if (state.activePreset !== 'custom') return true;
-  
+
   const greenSecs = (parseInt(elements.customGreenMin.value) || 0) * 60 + (parseInt(elements.customGreenSec.value) || 0);
   const yellowSecs = (parseInt(elements.customYellowMin.value) || 0) * 60 + (parseInt(elements.customYellowSec.value) || 0);
   const redSecs = (parseInt(elements.customRedMin.value) || 0) * 60 + (parseInt(elements.customRedSec.value) || 0);
-  
+
   const isValid = (greenSecs > 0) && (greenSecs < yellowSecs) && (yellowSecs < redSecs);
-  
+
   if (isValid) {
     elements.customValidationError.classList.add('hidden');
     elements.btnStartSpeech.disabled = false;
@@ -209,7 +239,7 @@ function validateCustomInputs() {
     elements.customValidationError.classList.remove('hidden');
     elements.btnStartSpeech.disabled = true;
   }
-  
+
   return isValid;
 }
 
@@ -234,56 +264,56 @@ async function startSpeech() {
   // Pull speaker details
   const inputName = elements.speakerInput.value.trim();
   state.speakerName = inputName ? inputName : 'Speaker';
-  
+
   // Synchronize thresholds
   syncTimingThresholds();
-  
+
   // Configure display states
   elements.immersiveSpeakerBadge.textContent = state.speakerName;
-  
+
   let presetLabel = '';
   if (state.activePreset === 'custom') {
-    presetLabel = `Custom (${formatSeconds(state.thresholds.green)} - ${formatSeconds(state.thresholds.red)})`;
+    const customName = elements.customPresetName.value.trim() || 'Custom';
+    presetLabel = `${customName} (${formatSeconds(state.thresholds.green)} - ${formatSeconds(state.thresholds.red)})`;
   } else {
     presetLabel = `${state.presets[state.activePreset].name} (${formatSeconds(state.thresholds.green)} - ${formatSeconds(state.thresholds.red)})`;
   }
   elements.immersivePresetBadge.textContent = presetLabel;
-  
+
   // Set Digits Display Setting
   if (elements.settingShowTimer.checked) {
     elements.timerDigitsContainer.classList.remove('hidden');
-    elements.hiddenDigitsIndicator.classList.add('hidden');
   } else {
     elements.timerDigitsContainer.classList.add('hidden');
-    elements.hiddenDigitsIndicator.classList.remove('hidden');
   }
-  
+
   // Swap Views
   elements.setupView.classList.remove('view-active');
   elements.setupView.classList.add('view-hidden');
   elements.timerView.classList.remove('view-hidden');
   elements.timerView.classList.add('view-active');
-  
+
   // Initialize states
   state.isRunning = true;
   state.isPaused = false;
   state.elapsedSeconds = 0;
   state.accumulatedTime = 0;
   state.startTime = Date.now();
-  
+
   updateDisplay(0);
-  
+
   // Request wake lock if selected and supported
   if (elements.settingWakeLock.checked) {
     await requestWakeLock();
   }
-  
+
   // Start the background tracking interval
-  const tickRate = elements.settingDemoMode.checked ? 1000 / 60 : 1000; // Accelerated demo mode multiplies time by 60!
+  const isDemoActive = ENABLE_DEMO_MODE && elements.settingDemoMode.checked;
+  const tickRate = isDemoActive ? 1000 / 60 : 1000; // Accelerated demo mode multiplies time by 60!
   state.timerInterval = setInterval(() => {
     if (!state.isPaused) {
       let delta;
-      if (elements.settingDemoMode.checked) {
+      if (isDemoActive) {
         // Fast-forward demo mode: increment 1 minute per real-world second
         state.accumulatedTime += 60 * 1000;
         delta = state.accumulatedTime;
@@ -291,7 +321,7 @@ async function startSpeech() {
         // Real accurate timer: delta against standard timestamps
         delta = Date.now() - state.startTime + state.accumulatedTime;
       }
-      
+
       state.elapsedSeconds = Math.floor(delta / 1000);
       updateDisplay(state.elapsedSeconds);
     }
@@ -301,7 +331,7 @@ async function startSpeech() {
 // Pause/Resume Speech Timer
 function togglePause() {
   if (!state.isRunning) return;
-  
+
   if (state.isPaused) {
     // Resume
     state.isPaused = false;
@@ -331,21 +361,21 @@ function resetTimer() {
   state.timerInterval = null;
   state.isRunning = false;
   state.isPaused = false;
-  
+
   releaseWakeLock();
   exitFullscreenMode();
-  
+
   // Restore view toggle
   elements.timerView.classList.remove('view-active');
   elements.timerView.classList.add('view-hidden');
   elements.setupView.classList.remove('view-hidden');
   elements.setupView.classList.add('view-active');
-  
+
   // Reset pause buttons
   elements.btnPause.innerHTML = '<span class="icon">⏸️</span> Pause';
   elements.btnPause.classList.remove('btn-secondary');
   elements.btnPause.classList.add('btn-warn');
-  
+
   // Clean classes
   elements.immersiveBg.className = 'immersive-beacon bg-neutral';
 }
@@ -353,30 +383,30 @@ function resetTimer() {
 // Stop speech, Log Details, Save to History
 function stopSpeech() {
   if (!state.isRunning) return;
-  
+
   clearInterval(state.timerInterval);
   state.timerInterval = null;
   state.isRunning = false;
-  
+
   const totalSeconds = state.elapsedSeconds;
-  
+
   // Log timing result
   saveSpeechLog(state.speakerName, state.activePreset, totalSeconds);
-  
+
   releaseWakeLock();
   exitFullscreenMode();
-  
+
   // Swap Views back
   elements.timerView.classList.remove('view-active');
   elements.timerView.classList.add('view-hidden');
   elements.setupView.classList.remove('view-hidden');
   elements.setupView.classList.add('view-active');
-  
+
   // Reset buttons
   elements.btnPause.innerHTML = '<span class="icon">⏸️</span> Pause';
   elements.btnPause.classList.remove('btn-secondary');
   elements.btnPause.classList.add('btn-warn');
-  
+
   // Clear classes
   elements.immersiveBg.className = 'immersive-beacon bg-neutral';
 }
@@ -387,7 +417,7 @@ function stopSpeech() {
 function updateDisplay(seconds) {
   // Update numerical clock digits
   elements.displayTime.textContent = formatSecondsToClock(seconds);
-  
+
   /* CUSTOMIZATION GUIDE: TIMER STATE LABELS & STATUS COLORS
      Here you can modify the text that displays inside the circular timer ring (e.g. 'RUNNING', 'GREEN REACHED')
      and the exact color of the text during each active state.
@@ -423,7 +453,7 @@ function updateDisplay(seconds) {
 function handleKeyPress(e) {
   // Ensure we are inside the active timer view before intercepting spacebar
   if (!state.isRunning) return;
-  
+
   if (e.code === 'Space') {
     e.preventDefault();
     togglePause();
@@ -439,15 +469,15 @@ function handleKeyPress(e) {
 // ==========================================================================
 async function requestWakeLock() {
   if (!('wakeLock' in navigator) || !elements.settingWakeLock.checked) return;
-  
+
   try {
     state.wakeLockSentinel = await navigator.wakeLock.request('screen');
-    
+
     // Update badge UI
     elements.wakelockStatus.classList.remove('badge-secondary', 'badge-inactive');
     elements.wakelockStatus.classList.add('badge-active');
     elements.wakelockStatus.innerHTML = '<span class="badge-dot"></span> Wake Lock: Active';
-    
+
     // Sentinel release handler listener
     state.wakeLockSentinel.addEventListener('release', () => {
       if (!state.isRunning || state.isPaused) {
@@ -519,9 +549,9 @@ function saveSpeechLog(speaker, type, elapsedSecs) {
   let minLimit = 0;
   let maxLimit = 0;
   let label = '';
-  
+
   if (type === 'custom') {
-    label = 'Custom';
+    label = elements.customPresetName.value.trim() || 'Custom';
     // For custom presets, we calculate standard 30s grace window buffer on thresholds
     minLimit = Math.max(0, state.thresholds.green - 30);
     maxLimit = state.thresholds.red + 30;
@@ -531,11 +561,11 @@ function saveSpeechLog(speaker, type, elapsedSecs) {
     minLimit = config.minQualify;
     maxLimit = config.maxQualify;
   }
-  
+
   // Decide Qualification status
   let status = 'qualified';
   let statusLabel = 'Qualified';
-  
+
   if (elapsedSecs < minLimit) {
     status = 'undertime';
     statusLabel = 'Under Time';
@@ -543,7 +573,7 @@ function saveSpeechLog(speaker, type, elapsedSecs) {
     status = 'disqualified';
     statusLabel = 'Over Time';
   }
-  
+
   const logItem = {
     id: Date.now(),
     speaker: speaker,
@@ -554,34 +584,34 @@ function saveSpeechLog(speaker, type, elapsedSecs) {
     statusLabel: statusLabel,
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   };
-  
+
   // Save to localStorage array
   const logs = JSON.parse(localStorage.getItem('tm_timer_history') || '[]');
   logs.unshift(logItem); // Insert at start
   localStorage.setItem('tm_timer_history', JSON.stringify(logs));
-  
+
   renderHistoryTable();
 }
 
 function renderHistoryTable() {
   const logs = JSON.parse(localStorage.getItem('tm_timer_history') || '[]');
-  
+
   // Clear current rows except header
   elements.historyBody.innerHTML = '';
-  
+
   if (logs.length === 0) {
     elements.historyBody.appendChild(elements.historyEmptyRow);
     return;
   }
-  
+
   logs.forEach(log => {
     const tr = document.createElement('tr');
-    
+
     // Status Tag class
     let tagClass = 'tag-qualified';
     if (log.status === 'undertime') tagClass = 'tag-undertime';
     if (log.status === 'disqualified') tagClass = 'tag-disqualified';
-    
+
     tr.innerHTML = `
       <td style="font-weight:600; color:#ffffff;">${escapeHTML(log.speaker)}</td>
       <td>${log.typeLabel}</td>
@@ -590,7 +620,7 @@ function renderHistoryTable() {
       <td><span class="tag ${tagClass}">${log.statusLabel}</span></td>
       <td class="text-muted">${log.timestamp}</td>
     `;
-    
+
     elements.historyBody.appendChild(tr);
   });
 }
@@ -622,7 +652,7 @@ function formatSecondsToClock(totalSeconds) {
 }
 
 function escapeHTML(str) {
-  return str.replace(/[&<>'"]/g, 
+  return str.replace(/[&<>'"]/g,
     tag => ({
       '&': '&amp;',
       '<': '&lt;',
@@ -631,4 +661,23 @@ function escapeHTML(str) {
       '"': '&quot;'
     }[tag] || tag)
   );
+}
+
+// Safely increment/decrement time inputs via custom spin buttons
+function handleSpinClick(input, direction) {
+  let val = parseInt(input.value);
+  if (isNaN(val)) {
+    val = parseInt(input.min) || 0;
+  }
+  const min = input.min !== "" ? parseInt(input.min) : -Infinity;
+  const max = input.max !== "" ? parseInt(input.max) : Infinity;
+
+  if (direction === 'up') {
+    if (val < max) input.value = val + 1;
+  } else if (direction === 'down') {
+    if (val > min) input.value = val - 1;
+  }
+
+  // Trigger input event to run validation & synchronize thresholds
+  input.dispatchEvent(new Event('input'));
 }

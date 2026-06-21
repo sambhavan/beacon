@@ -108,6 +108,12 @@
             <!-- Custom Timing Form Panel (collapsible/expandable) -->
             <div id="custom-timing-form" class="glass-card card-glow form-card collapsed">
               <h2 class="section-title">🔧 Custom Thresholds Configuration</h2>
+              
+              <div class="input-group" style="margin-bottom: 1.5rem;">
+                <label for="custom-preset-name">Custom Preset Name</label>
+                <input type="text" id="custom-preset-name" value="Custom" placeholder="e.g., Prepared Speech #2" autocomplete="off">
+              </div>
+
               <div class="custom-inputs-row">
                 
                 <div class="custom-input-col border-green">
@@ -116,10 +122,18 @@
                     <div class="number-input">
                       <input type="number" id="custom-green-min" min="0" max="99" value="5" placeholder="Min">
                       <span class="unit">m</span>
+                      <div class="spin-buttons">
+                        <button type="button" class="spin-btn up" tabindex="-1">▲</button>
+                        <button type="button" class="spin-btn down" tabindex="-1">▼</button>
+                      </div>
                     </div>
                     <div class="number-input">
                       <input type="number" id="custom-green-sec" min="0" max="59" value="0" placeholder="Sec">
                       <span class="unit">s</span>
+                      <div class="spin-buttons">
+                        <button type="button" class="spin-btn up" tabindex="-1">▲</button>
+                        <button type="button" class="spin-btn down" tabindex="-1">▼</button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -130,10 +144,18 @@
                     <div class="number-input">
                       <input type="number" id="custom-yellow-min" min="0" max="99" value="6" placeholder="Min">
                       <span class="unit">m</span>
+                      <div class="spin-buttons">
+                        <button type="button" class="spin-btn up" tabindex="-1">▲</button>
+                        <button type="button" class="spin-btn down" tabindex="-1">▼</button>
+                      </div>
                     </div>
                     <div class="number-input">
                       <input type="number" id="custom-yellow-sec" min="0" max="59" value="0" placeholder="Sec">
                       <span class="unit">s</span>
+                      <div class="spin-buttons">
+                        <button type="button" class="spin-btn up" tabindex="-1">▲</button>
+                        <button type="button" class="spin-btn down" tabindex="-1">▼</button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -144,10 +166,18 @@
                     <div class="number-input">
                       <input type="number" id="custom-red-min" min="0" max="99" value="7" placeholder="Min">
                       <span class="unit">m</span>
+                      <div class="spin-buttons">
+                        <button type="button" class="spin-btn up" tabindex="-1">▲</button>
+                        <button type="button" class="spin-btn down" tabindex="-1">▼</button>
+                      </div>
                     </div>
                     <div class="number-input">
                       <input type="number" id="custom-red-sec" min="0" max="59" value="0" placeholder="Sec">
                       <span class="unit">s</span>
+                      <div class="spin-buttons">
+                        <button type="button" class="spin-btn up" tabindex="-1">▲</button>
+                        <button type="button" class="spin-btn down" tabindex="-1">▼</button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -270,12 +300,7 @@
                 <div class="speech-status-label" id="speech-status">STARTING</div>
               </div>
 
-              <!-- Static text indicator when digits are hidden -->
-              <div id="hidden-digits-indicator" class="hidden-digits-label hidden">
-                <div class="indicator-icon">👁️‍🗨️</div>
-                <div class="indicator-title">Immersive Mode Active</div>
-                <div class="indicator-sub">Watch background colors. Focus on your pace.</div>
-              </div>
+
             </div>
 
             <!-- Bottom Floating Control Center -->

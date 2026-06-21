@@ -476,6 +476,33 @@ main {
   -moz-appearance: textfield;
 }
 
+.spin-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-left: 0.25rem;
+}
+
+.spin-btn {
+  background: none;
+  border: none;
+  color: var(--color-slate-400);
+  font-size: 0.55rem;
+  cursor: pointer;
+  padding: 1px 2px;
+  line-height: 1;
+  transition: color 0.2s, transform 0.1s;
+}
+
+.spin-btn:hover {
+  color: #fff;
+}
+
+.spin-btn:active {
+  transform: scale(0.85);
+}
+
 .number-input input[type="number"]::-webkit-outer-spin-button,
 .number-input input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -898,43 +925,7 @@ tr:hover td {
   text-transform: uppercase;
 }
 
-/* Immersive Text display when numbers are hidden */
-.hidden-digits-label {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  background: rgba(16, 23, 38, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  padding: 2rem;
-  border-radius: 24px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-  max-width: 320px;
-  animation: zoom-in 0.3s ease-out;
-}
 
-.indicator-icon {
-  font-size: 2.2rem;
-  margin-bottom: 0.75rem;
-  animation: pulse-slow 3s infinite;
-}
-
-.indicator-title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 0.4rem;
-}
-
-.indicator-sub {
-  font-size: 0.8rem;
-  color: var(--color-slate-400);
-  line-height: 1.4;
-}
 
 /* Floating Control Deck at bottom */
 .floating-controls-panel {
